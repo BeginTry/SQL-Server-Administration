@@ -1,0 +1,61 @@
+/*
+	Returns a list of database principals (users, et al) and any
+	permissinos that have explicitly been granted or denied for all system and user databases.
+*/
+
+CREATE TABLE #DatabasePrincipalPermissions (
+	[Database Name] SYSNAME,
+	[Principal Name] SYSNAME,
+	[Principal Type] CHAR(1),
+	Permission NVARCHAR(MAX),
+	Class NVARCHAR(256),
+	SecurableSchema SYSNAME,
+	SecurableObject SYSNAME,
+	Securible_Id INT
+)
+
+DECLARE @command VARCHAR(1000) ;
+SELECT @command = 'USE [?];
+
+INSERT INTO #DatabasePrincipalPermissions
+SELECT 
+	DB_NAME() AS database_name,
+	prin.[name] [Principal Name], 
+	prin.type,
+	COALESCE(perm.state_desc + '' '' + perm.permission_name, ''no permission statements'') [Permission],
+	COALESCE(perm.class_desc, ''n/a'') Class, 
+
+	COALESCE(OBJECT_SCHEMA_NAME(perm.major_id), ''n/a'') [SecurableSchema],
+	COALESCE(OBJECT_NAME(perm.major_id), ''n/a'') [SecurableObject], 
+	perm.major_id [Securible_Id]
+FROM sys.database_principals prin
+LEFT JOIN sys.database_permissions perm 
+	ON perm.grantee_principal_id = prin.principal_id 
+WHERE prin.is_fixed_role = 0;';
+
+EXEC sp_MSforeachdb @command;
+
+SELECT 
+	dpp.[Database Name], 
+	dpp.[Principal Name], 
+	CASE dpp.[Principal Type]
+		WHEN 'A' THEN 'Application role'
+		WHEN 'C' THEN 'User mapped to a certificate'
+		WHEN 'E' THEN 'External user from Azure Active Directory'
+		WHEN 'G' THEN 'Windows group'
+		WHEN 'K' THEN 'User mapped to an asymmetric key'
+		WHEN 'R' THEN 'Database role'
+		WHEN 'S' THEN 'User (SQL Auth)'
+		WHEN 'U' THEN 'User (Windows Auth)'
+		WHEN 'X' THEN 'External group from Azure Active Directory group or applications'
+	END	AS [Principal Description],
+	dpp.Permission, 
+	dpp.Class, 
+	dpp.SecurableSchema, 
+	dpp.SecurableObject, 
+	dpp.Securible_Id
+FROM #DatabasePrincipalPermissions dpp
+ORDER BY dpp.[Database Name], dpp.[Principal Name], dpp.Permission, dpp.SecurableObject;
+
+DROP TABLE #DatabasePrincipalPermissions;
+GO
