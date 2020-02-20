@@ -1,0 +1,20 @@
+/*
+	Returns a list of server principals (logins, et al) and the roles
+	they are members of (if any).
+*/
+BEGIN
+SELECT 
+	l.name LoginName, 
+	l.type_desc AS LoginType,
+	COALESCE(r.name, '<none>') AS RoleName, 
+	m.role_principal_id,
+	m.member_principal_id
+FROM  master.sys.server_principals l
+LEFT JOIN master.sys.server_role_members m
+	ON m.member_principal_id = l.principal_id
+LEFT JOIN master.sys.server_principals r
+	ON r.principal_id = m.role_principal_id
+WHERE l.type NOT IN ('R')
+ORDER BY l.name, r.name
+END
+GO
