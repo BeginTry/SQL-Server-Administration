@@ -1,0 +1,207 @@
+/*
+	Returns a list of permissions for each fixed database role.
+	NOTE: you cannot grant, deny or revoke permissions to or from special roles. (See Msg 4617.)
+	Results may vary by SQL Server version, but will otherwise the be same on every database.
+	(The script only needs to be run once per instance.)
+*/
+IF NOT EXISTS (
+	SELECT *
+	FROM sys.database_principals  p
+	WHERE p.name = 'TempUser'
+)
+BEGIN
+	CREATE USER TempUser
+	WITHOUT LOGIN
+END
+
+
+CREATE TABLE #RolePermissions (
+	PermissionName SYSName,
+	[public] CHAR(1) DEFAULT '',
+	db_accessadmin CHAR(1) DEFAULT '',
+	db_backupoperator CHAR(1) DEFAULT '',
+	db_datareader CHAR(1) DEFAULT '',
+	db_datawriter CHAR(1) DEFAULT '',
+	db_ddladmin CHAR(1) DEFAULT '',
+	db_denydatareader CHAR(1) DEFAULT '',
+	db_denydatawriter CHAR(1) DEFAULT '',
+	db_owner CHAR(1) DEFAULT '',
+	db_securityadmin CHAR(1) DEFAULT ''
+)
+
+
+--Public
+EXECUTE AS USER = 'TempUser';
+
+MERGE #RolePermissions AS Target
+USING fn_my_permissions(NULL, 'DATABASE') AS Source
+	ON (Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS = Target.PermissionName)
+WHEN MATCHED THEN
+	UPDATE SET Target.[Public] = 'Y'
+WHEN NOT MATCHED BY Target THEN
+	INSERT([Public], PermissionName) 
+	VALUES('Y', Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS)
+--OUTPUT $action, Inserted.*, Deleted.*
+;
+REVERT;
+
+
+EXEC sp_addrolemember N'db_accessadmin', N'TempUser';
+EXECUTE AS USER = 'TempUser';
+MERGE #RolePermissions AS Target
+USING fn_my_permissions(NULL, 'DATABASE') AS Source
+	ON (Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS = Target.PermissionName)
+WHEN MATCHED THEN
+	UPDATE SET Target.db_accessadmin = 'Y'
+WHEN NOT MATCHED BY Target THEN
+	INSERT(db_accessadmin, PermissionName) 
+	VALUES('Y', Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS)
+--OUTPUT $action, Inserted.*, Deleted.*
+;
+REVERT;
+EXEC sp_droprolemember N'db_accessadmin', N'TempUser';
+
+
+EXEC sp_addrolemember N'db_backupoperator', N'TempUser';
+EXECUTE AS USER = 'TempUser';
+MERGE #RolePermissions AS Target
+USING fn_my_permissions(NULL, 'DATABASE') AS Source
+	ON (Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS = Target.PermissionName)
+WHEN MATCHED THEN
+	UPDATE SET Target.db_backupoperator = 'Y'
+WHEN NOT MATCHED BY Target THEN
+	INSERT(db_backupoperator, PermissionName) 
+	VALUES('Y', Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS)
+--OUTPUT $action, Inserted.*, Deleted.*
+;
+REVERT;
+EXEC sp_droprolemember N'db_backupoperator', N'TempUser';
+
+
+EXEC sp_addrolemember N'db_datareader', N'TempUser';
+EXECUTE AS USER = 'TempUser';
+MERGE #RolePermissions AS Target
+USING fn_my_permissions(NULL, 'DATABASE') AS Source
+	ON (Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS = Target.PermissionName)
+WHEN MATCHED THEN
+	UPDATE SET Target.db_datareader = 'Y'
+WHEN NOT MATCHED BY Target THEN
+	INSERT(db_datareader, PermissionName) 
+	VALUES('Y', Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS)
+--OUTPUT $action, Inserted.*, Deleted.*
+;
+REVERT;
+EXEC sp_droprolemember N'db_datareader', N'TempUser';
+
+
+EXEC sp_addrolemember N'db_datawriter', N'TempUser';
+EXECUTE AS USER = 'TempUser';
+MERGE #RolePermissions AS Target
+USING fn_my_permissions(NULL, 'DATABASE') AS Source
+	ON (Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS = Target.PermissionName)
+WHEN MATCHED THEN
+	UPDATE SET Target.db_datawriter = 'Y'
+WHEN NOT MATCHED BY Target THEN
+	INSERT(db_datawriter, PermissionName) 
+	VALUES('Y', Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS)
+--OUTPUT $action, Inserted.*, Deleted.*
+;
+REVERT;
+EXEC sp_droprolemember N'db_datawriter', N'TempUser';
+
+
+EXEC sp_addrolemember N'db_ddladmin', N'TempUser';
+EXECUTE AS USER = 'TempUser';
+MERGE #RolePermissions AS Target
+USING fn_my_permissions(NULL, 'DATABASE') AS Source
+	ON (Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS = Target.PermissionName)
+WHEN MATCHED THEN
+	UPDATE SET Target.db_ddladmin = 'Y'
+WHEN NOT MATCHED BY Target THEN
+	INSERT(db_ddladmin, PermissionName) 
+	VALUES('Y', Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS)
+--OUTPUT $action, Inserted.*, Deleted.*
+;
+REVERT;
+EXEC sp_droprolemember N'db_ddladmin', N'TempUser';
+
+
+EXEC sp_addrolemember N'db_denydatareader', N'TempUser';
+EXECUTE AS USER = 'TempUser';
+MERGE #RolePermissions AS Target
+USING fn_my_permissions(NULL, 'DATABASE') AS Source
+	ON (Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS = Target.PermissionName)
+WHEN MATCHED THEN
+	UPDATE SET Target.db_denydatareader = 'Y'
+WHEN NOT MATCHED BY Target THEN
+	INSERT(db_denydatareader, PermissionName) 
+	VALUES('Y', Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS)
+--OUTPUT $action, Inserted.*, Deleted.*
+;
+REVERT;
+EXEC sp_droprolemember N'db_denydatareader', N'TempUser';
+
+
+EXEC sp_addrolemember N'db_denydatawriter', N'TempUser';
+EXECUTE AS USER = 'TempUser';
+MERGE #RolePermissions AS Target
+USING fn_my_permissions(NULL, 'DATABASE') AS Source
+	ON (Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS = Target.PermissionName)
+WHEN MATCHED THEN
+	UPDATE SET Target.db_denydatawriter = 'Y'
+WHEN NOT MATCHED BY Target THEN
+	INSERT(db_denydatawriter, PermissionName) 
+	VALUES('Y', Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS)
+--OUTPUT $action, Inserted.*, Deleted.*
+;
+REVERT;
+EXEC sp_droprolemember N'db_denydatawriter', N'TempUser';
+
+
+EXEC sp_addrolemember N'db_owner', N'TempUser';
+EXECUTE AS USER = 'TempUser';
+MERGE #RolePermissions AS Target
+USING fn_my_permissions(NULL, 'DATABASE') AS Source
+	ON (Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS = Target.PermissionName)
+WHEN MATCHED THEN
+	UPDATE SET Target.db_owner = 'Y'
+WHEN NOT MATCHED BY Target THEN
+	INSERT(db_owner, PermissionName) 
+	VALUES('Y', Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS)
+--OUTPUT $action, Inserted.*, Deleted.*
+;
+REVERT;
+EXEC sp_droprolemember N'db_owner', N'TempUser';
+
+
+EXEC sp_addrolemember N'db_securityadmin', N'TempUser';
+EXECUTE AS USER = 'TempUser';
+MERGE #RolePermissions AS Target
+USING fn_my_permissions(NULL, 'DATABASE') AS Source
+	ON (Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS = Target.PermissionName)
+WHEN MATCHED THEN
+	UPDATE SET Target.db_securityadmin = 'Y'
+WHEN NOT MATCHED BY Target THEN
+	INSERT(db_securityadmin, PermissionName) 
+	VALUES('Y', Source.permission_name COLLATE SQL_Latin1_General_CP1_CI_AS)
+--OUTPUT $action, Inserted.*, Deleted.*
+;
+REVERT;
+EXEC sp_droprolemember N'db_securityadmin', N'TempUser';
+
+
+IF EXISTS (
+	SELECT *
+	FROM sys.database_principals  p
+	WHERE p.name = 'TempUser'
+)
+BEGIN
+	DROP USER TempUser
+END
+
+
+SELECT *
+FROM #RolePermissions rp;
+
+DROP TABLE #RolePermissions;
+GO
