@@ -1,0 +1,41 @@
+/*
+	Returns a list of server principals (logins, et al) and any
+	permissions that have explicitly been granted or denied.
+
+	01/06/2020	Updated to support versions < SQL Server 2012.
+*/
+BEGIN
+DECLARE @MajVer INT;
+SET @MajVer = CAST(PARSENAME(CAST(SERVERPROPERTY('ProductVersion') AS VARCHAR(MAX)), 4) AS INT);
+
+CREATE TABLE #FixedServerRoles (
+	ServerRole SYSNAME,
+	[Description] SYSNAME
+)
+
+IF @MajVer <= 10
+BEGIN
+	EXEC ('INSERT INTO #FixedServerRoles EXEC sp_helpsrvrole;');
+END
+ELSE
+BEGIN
+	EXEC ('INSERT INTO #FixedServerRoles 
+	SELECT prin.name AS PrincipalName, prin.type_desc
+	FROM sys.server_principals AS prin
+	WHERE is_fixed_role = 1;');
+END
+
+SELECT 
+	prin.name AS PrincipalName, 
+	prin.type_desc PrincipalType, 
+	COALESCE (perm.state_desc, 'No permission statements') AS state_desc, 
+	COALESCE (perm.permission_name, 'No permission statements') AS [permission_name]
+FROM sys.server_principals AS prin
+LEFT JOIN sys.server_permissions AS perm
+	ON prin.principal_id = perm.grantee_principal_id
+WHERE prin.name NOT IN (SELECT fsr.ServerRole FROM #FixedServerRoles fsr)
+ORDER BY prin.name, prin.type_desc;
+
+DROP TABLE #FixedServerRoles;
+END
+GO
