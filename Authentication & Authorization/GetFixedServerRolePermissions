@@ -1,0 +1,256 @@
+/*
+	Returns a list of permissions for each fixed server role.
+	The script only needs to be run once per instance, although results may vary by SQL Server version.
+	NOTE: you cannot grant, deny or revoke permissions to or from special roles. (See Msg 4617.)
+
+	01/06/2020	Updated to support versions < SQL Server 2012.
+*/
+
+EXEC('
+	CREATE VIEW vPermissionsByServerRole AS
+		SELECT p.*
+		FROM sys.securable_classes c
+		CROSS APPLY fn_my_permissions(NULL, c.class_desc) p;
+');
+
+EXEC('GRANT SELECT ON vPermissionsByServerRole TO PUBLIC;');
+
+CREATE LOGIN PermissionsByServerRole
+WITH PASSWORD = 'asdf1234JKL:';
+
+SELECT CAST('' AS SYSNAME) AS ServerRole, *
+INTO #PermissionsByServerRole
+FROM vPermissionsByServerRole
+WHERE 1 = 2;
+
+/************************************************************************/
+--Permissions for server role [public].
+EXECUTE AS LOGIN = 'PermissionsByServerRole';
+INSERT INTO #PermissionsByServerRole
+SELECT 'public' AS ServerRole, *
+FROM vPermissionsByServerRole
+ORDER BY entity_name, subentity_name, permission_name; 
+
+REVERT;
+/************************************************************************/
+DECLARE @MajVer INT;
+SET @MajVer = CAST(PARSENAME(CAST(SERVERPROPERTY('ProductVersion') AS VARCHAR(MAX)), 4) AS INT);
+
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_addsrvrolemember N'PermissionsByServerRole', N'bulkadmin';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE bulkadmin ADD MEMBER PermissionsByServerRole;');
+END
+
+EXECUTE AS LOGIN = 'PermissionsByServerRole';
+
+INSERT INTO #PermissionsByServerRole
+SELECT 'bulkadmin' AS ServerRole, *
+FROM vPermissionsByServerRole
+ORDER BY entity_name, subentity_name, permission_name; 
+
+REVERT;
+
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_dropsrvrolemember N'PermissionsByServerRole', N'bulkadmin';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE bulkadmin DROP MEMBER PermissionsByServerRole;');
+END
+/************************************************************************/
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_addsrvrolemember N'PermissionsByServerRole', N'dbcreator';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE dbcreator ADD MEMBER PermissionsByServerRole;');
+END
+EXECUTE AS LOGIN = 'PermissionsByServerRole';
+
+INSERT INTO #PermissionsByServerRole
+SELECT 'dbcreator' AS ServerRole, *
+FROM vPermissionsByServerRole
+ORDER BY entity_name, subentity_name, permission_name; 
+
+REVERT;
+
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_dropsrvrolemember N'PermissionsByServerRole', N'dbcreator';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE dbcreator DROP MEMBER PermissionsByServerRole;');
+END
+/************************************************************************/
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_addsrvrolemember N'PermissionsByServerRole', N'diskadmin';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE diskadmin ADD MEMBER PermissionsByServerRole;');
+END
+EXECUTE AS LOGIN = 'PermissionsByServerRole';
+
+INSERT INTO #PermissionsByServerRole
+SELECT 'diskadmin' AS ServerRole, *
+FROM vPermissionsByServerRole
+ORDER BY entity_name, subentity_name, permission_name; 
+
+REVERT;
+
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_dropsrvrolemember N'PermissionsByServerRole', N'diskadmin';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE diskadmin DROP MEMBER PermissionsByServerRole;');
+END
+/************************************************************************/
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_addsrvrolemember N'PermissionsByServerRole', N'processadmin';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE processadmin ADD MEMBER PermissionsByServerRole;');
+END
+EXECUTE AS LOGIN = 'PermissionsByServerRole';
+
+INSERT INTO #PermissionsByServerRole
+SELECT 'processadmin' AS ServerRole, *
+FROM vPermissionsByServerRole
+ORDER BY entity_name, subentity_name, permission_name; 
+
+REVERT;
+
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_dropsrvrolemember N'PermissionsByServerRole', N'processadmin';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE processadmin DROP MEMBER PermissionsByServerRole;');
+END
+/************************************************************************/
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_addsrvrolemember N'PermissionsByServerRole', N'securityadmin';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE securityadmin ADD MEMBER PermissionsByServerRole;');
+END
+EXECUTE AS LOGIN = 'PermissionsByServerRole';
+
+INSERT INTO #PermissionsByServerRole
+SELECT 'securityadmin' AS ServerRole, *
+FROM vPermissionsByServerRole
+ORDER BY entity_name, subentity_name, permission_name; 
+
+REVERT;
+
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_dropsrvrolemember N'PermissionsByServerRole', N'securityadmin';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE securityadmin DROP MEMBER PermissionsByServerRole;');
+END
+/************************************************************************/
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_addsrvrolemember N'PermissionsByServerRole', N'serveradmin';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE serveradmin ADD MEMBER PermissionsByServerRole;');
+END
+EXECUTE AS LOGIN = 'PermissionsByServerRole';
+
+INSERT INTO #PermissionsByServerRole
+SELECT 'serveradmin' AS ServerRole, *
+FROM vPermissionsByServerRole
+ORDER BY entity_name, subentity_name, permission_name; 
+
+REVERT;
+
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_dropsrvrolemember N'PermissionsByServerRole', N'serveradmin';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE serveradmin DROP MEMBER PermissionsByServerRole;');
+END
+/************************************************************************/
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_addsrvrolemember N'PermissionsByServerRole', N'setupadmin';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE setupadmin ADD MEMBER PermissionsByServerRole;');
+END
+EXECUTE AS LOGIN = 'PermissionsByServerRole';
+
+INSERT INTO #PermissionsByServerRole
+SELECT 'setupadmin' AS ServerRole, *
+FROM vPermissionsByServerRole
+ORDER BY entity_name, subentity_name, permission_name; 
+
+REVERT;
+
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_dropsrvrolemember N'PermissionsByServerRole', N'setupadmin';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE setupadmin DROP MEMBER PermissionsByServerRole;');
+END
+/************************************************************************/
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_addsrvrolemember N'PermissionsByServerRole', N'sysadmin';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE sysadmin ADD MEMBER PermissionsByServerRole;');
+END
+EXECUTE AS LOGIN = 'PermissionsByServerRole';
+
+INSERT INTO #PermissionsByServerRole
+SELECT 'sysadmin' AS ServerRole, *
+FROM vPermissionsByServerRole
+ORDER BY entity_name, subentity_name, permission_name; 
+
+REVERT;
+
+IF @MajVer <= 10
+BEGIN
+	EXEC sp_dropsrvrolemember N'PermissionsByServerRole', N'sysadmin';
+END
+ELSE
+BEGIN
+	EXEC('ALTER SERVER ROLE sysadmin DROP MEMBER PermissionsByServerRole;');
+END
+/************************************************************************/
+DROP LOGIN PermissionsByServerRole;
+DROP VIEW vPermissionsByServerRole;
+
+SELECT *
+FROM #PermissionsByServerRole p
+ORDER BY p.ServerRole, p.entity_name, p.subentity_name, p.permission_name;
+
+DROP TABLE #PermissionsByServerRole;
+GO
