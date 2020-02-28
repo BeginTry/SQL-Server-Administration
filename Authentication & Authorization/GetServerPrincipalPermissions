@@ -29,7 +29,15 @@ SELECT
 	prin.name AS PrincipalName, 
 	prin.type_desc PrincipalType, 
 	COALESCE (perm.state_desc, 'No permission statements') AS state_desc, 
-	COALESCE (perm.permission_name, 'No permission statements') AS [permission_name]
+	COALESCE (perm.permission_name, 'No permission statements') AS [permission_name],
+	COALESCE(perm.class_desc, '')  permission_class,
+
+	CASE
+		WHEN perm.class_desc = 'SERVER' THEN ''
+		WHEN perm.class_desc = 'SERVER_PRINCIPAL' THEN NULL	--?
+		WHEN perm.class_desc = 'ENDPOINT' THEN ( SELECT e.protocol_desc COLLATE SQL_Latin1_General_CP1_CI_AS FROM sys.endpoints e WHERE e.endpoint_id = perm.major_id ) 
+		ELSE ''
+	END AS securable
 FROM sys.server_principals AS prin
 LEFT JOIN sys.server_permissions AS perm
 	ON prin.principal_id = perm.grantee_principal_id
