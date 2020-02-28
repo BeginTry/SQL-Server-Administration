@@ -52,8 +52,8 @@ SELECT
 	dpp.Permission, 
 	dpp.Class, 
 	dpp.SecurableSchema, 
-	dpp.SecurableObject, 
-	dpp.Securible_Id
+	dpp.SecurableObject
+	--,dpp.Securible_Id
 FROM #DatabasePrincipalPermissions dpp
 ORDER BY dpp.[Database Name], dpp.[Principal Name], dpp.Permission, dpp.SecurableObject;
 
