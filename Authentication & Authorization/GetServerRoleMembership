@@ -4,17 +4,15 @@
 */
 BEGIN
 SELECT 
-	l.name LoginName, 
+	l.name PrincipalName, 
 	l.type_desc AS LoginType,
-	COALESCE(r.name, '<none>') AS RoleName, 
-	m.role_principal_id,
-	m.member_principal_id
+	COALESCE(r.name, '<none>') AS RoleName
 FROM  master.sys.server_principals l
 LEFT JOIN master.sys.server_role_members m
 	ON m.member_principal_id = l.principal_id
 LEFT JOIN master.sys.server_principals r
 	ON r.principal_id = m.role_principal_id
-WHERE l.type NOT IN ('R')
+WHERE l.is_fixed_role = 0
 ORDER BY l.name, r.name
 END
 GO
