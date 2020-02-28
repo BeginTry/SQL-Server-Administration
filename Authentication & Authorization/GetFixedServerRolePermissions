@@ -26,15 +26,6 @@ FROM vPermissionsByServerRole
 WHERE 1 = 2;
 
 /************************************************************************/
---Permissions for server role [public].
-EXECUTE AS LOGIN = 'PermissionsByServerRole';
-INSERT INTO #PermissionsByServerRole
-SELECT 'public' AS ServerRole, *
-FROM vPermissionsByServerRole
-ORDER BY entity_name, subentity_name, permission_name; 
-
-REVERT;
-/************************************************************************/
 DECLARE @MajVer INT;
 SET @MajVer = CAST(PARSENAME(CAST(SERVERPROPERTY('ProductVersion') AS VARCHAR(MAX)), 4) AS INT);
 
