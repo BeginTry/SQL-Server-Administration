@@ -5,6 +5,8 @@
 
 	01/06/2020	Updated to support versions < SQL Server 2012.
 */
+USE tempdb;
+GO
 
 EXEC('
 	CREATE VIEW vPermissionsByServerRole AS
