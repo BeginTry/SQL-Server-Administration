@@ -1,7 +1,16 @@
 /*
 	Returns a list of database principals (users, et al) and the roles
 	they are members of (if any) for all system and user databases.
+
+	NOTE: the following special principals cannot be members of a role.
+	(See Msg 15405)
+		fixed database roles
+		dbo
+		INFORMATION_SCHEMA
+		sys
 */
+USE tempdb;
+GO
 
 CREATE TABLE #UserRoleMembership (
 	[Database Name] SYSNAME,
@@ -20,12 +29,13 @@ SELECT DB_NAME() AS DatabaseName,
 	u.name, 
 	u.type,
 	COALESCE(r.name, ''<none>'') AS RoleName
-FROM sys.database_principals u
+SELECT * FROM sys.database_principals u
 LEFT JOIN sys.database_role_members rm
 	ON rm.member_principal_id = u.principal_id
 LEFT JOIN sys.database_principals r
 	ON r.principal_id = rm.role_principal_id
---WHERE u.type != ''R'' ';
+WHERE u.is_fixed_role = 0
+AND u.name NOT IN (''dbo'', ''INFORMATION_SCHEMA'', ''sys'')';
 
 EXEC sp_MSforeachdb @command;
 
