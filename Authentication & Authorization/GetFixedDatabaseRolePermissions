@@ -3,6 +3,7 @@
 	NOTE: you cannot grant, deny or revoke permissions to or from special roles. (See Msg 4617.)
 	Results may vary by SQL Server version, but will otherwise the be same on every database.
 	(The script only needs to be run once per instance.)
+	REFERENCE: https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/database-level-roles
 */
 USE master;
 
