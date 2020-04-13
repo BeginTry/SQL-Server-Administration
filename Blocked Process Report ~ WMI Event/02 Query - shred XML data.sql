@@ -1,0 +1,67 @@
+--TODO: set the database where the blocked process report log data exists.
+USE DbaMetrics;
+GO
+
+SELECT CAST(p.PostTime AS SMALLDATETIME) AS PostTime, 
+	DB_NAME(p.DatabaseID) DatabaseName, p.Duration / 1000 Duration_ms, 
+	--p.EndTime, 
+	p.IndexID, p.IsSystem, p.ServerName, p.SessionLoginName, p.TextData,
+
+	--Blocking process.
+  --Comment/uncomment fields as desired. Note the impact on performance.
+	TextData.value('(/TextData/blocked-process-report/blocking-process/process/@status)[1]', 'VARCHAR(MAX)') AS BLK_status,
+	--TextData.value('(/TextData/blocked-process-report/blocking-process/process/@spid)[1]', 'VARCHAR(MAX)') AS BLK_spid,
+	--TextData.value('(/TextData/blocked-process-report/blocking-process/process/@sbid)[1]', 'VARCHAR(MAX)') AS BLK_sbid,
+	--TextData.value('(/TextData/blocked-process-report/blocking-process/process/@ecid)[1]', 'VARCHAR(MAX)') AS BLK_ecid,
+	--TextData.value('(/TextData/blocked-process-report/blocking-process/process/@priority)[1]', 'VARCHAR(MAX)') AS BLK_priority,
+	TextData.value('(/TextData/blocked-process-report/blocking-process/process/@trancount)[1]', 'VARCHAR(MAX)') AS BLK_trancount,
+	--TextData.value('(/TextData/blocked-process-report/blocking-process/process/@lastbatchstarted)[1]', 'VARCHAR(MAX)') AS BLK_lastbatchstarted,
+	--TextData.value('(/TextData/blocked-process-report/blocking-process/process/@lastbatchcompleted)[1]', 'VARCHAR(MAX)') AS BLK_lastbatchcompleted,
+	--TextData.value('(/TextData/blocked-process-report/blocking-process/process/@lastattention)[1]', 'VARCHAR(MAX)') AS BLK_lastattention,
+	TextData.value('(/TextData/blocked-process-report/blocking-process/process/@clientapp)[1]', 'VARCHAR(MAX)') AS BLK_clientapp,
+	TextData.value('(/TextData/blocked-process-report/blocking-process/process/@hostname)[1]', 'VARCHAR(MAX)') AS BLK_hostname,
+	--TextData.value('(/TextData/blocked-process-report/blocking-process/process/@hostpid)[1]', 'VARCHAR(MAX)') AS BLK_hostpid,
+	TextData.value('(/TextData/blocked-process-report/blocking-process/process/@loginname)[1]', 'VARCHAR(MAX)') AS BLK_loginname,
+	--TextData.value('(/TextData/blocked-process-report/blocking-process/process/@isolationlevel)[1]', 'VARCHAR(MAX)') AS BLK_isolationlevel,
+	--TextData.value('(/TextData/blocked-process-report/blocking-process/process/@xactid)[1]', 'VARCHAR(MAX)') AS BLK_xactid,
+	--TextData.value('(/TextData/blocked-process-report/blocking-process/process/@currentdb)[1]', 'VARCHAR(MAX)') AS BLK_currentdb,
+	TextData.value('(/TextData/blocked-process-report/blocking-process/process/@currentdbname)[1]', 'VARCHAR(MAX)') AS BLK_currentdbname,
+	TextData.value('(/TextData/blocked-process-report/blocking-process/process/@lockTimeout)[1]', 'VARCHAR(MAX)') AS BLK_lockTimeout,
+	--TextData.value('(/TextData/blocked-process-report/blocking-process/process/@clientoption1)[1]', 'VARCHAR(MAX)') AS BLK_clientoption1,
+	--TextData.value('(/TextData/blocked-process-report/blocking-process/process/@clientoption2)[1]', 'VARCHAR(MAX)') AS BLK_clientoption2,
+	TextData.value('(/TextData/blocked-process-report/blocking-process/process/inputbuf)[1]', 'VARCHAR(128)') AS BLK_inputbuf,
+
+	--Blocked process
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@taskpriority)[1]', 'VARCHAR(MAX)') AS VIC_taskpriority,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@logused)[1]', 'VARCHAR(MAX)') AS VIC_logused,
+	TextData.value('(/TextData/blocked-process-report/blocked-process/process/@waitresource)[1]', 'VARCHAR(MAX)') AS VIC_waitresource,
+	TextData.value('(/TextData/blocked-process-report/blocked-process/process/@waittime)[1]', 'VARCHAR(MAX)') AS VIC_waittime,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@ownerId)[1]', 'VARCHAR(MAX)') AS VIC_ownerId,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@transactionname)[1]', 'VARCHAR(MAX)') AS VIC_transactionname,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@lasttranstarted)[1]', 'VARCHAR(MAX)') AS VIC_lasttranstarted,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@XDES)[1]', 'VARCHAR(MAX)') AS VIC_XDES,
+	TextData.value('(/TextData/blocked-process-report/blocked-process/process/@lockMode)[1]', 'VARCHAR(MAX)') AS VIC_lockMode,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@schedulerid)[1]', 'VARCHAR(MAX)') AS VIC_schedulerid,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@kpid)[1]', 'VARCHAR(MAX)') AS VIC_kpid,
+	TextData.value('(/TextData/blocked-process-report/blocked-process/process/@status)[1]', 'VARCHAR(MAX)') AS VIC_status,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@spid)[1]', 'VARCHAR(MAX)') AS VIC_spid,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@sbid)[1]', 'VARCHAR(MAX)') AS VIC_sbid,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@ecid)[1]', 'VARCHAR(MAX)') AS VIC_ecid,
+	TextData.value('(/TextData/blocked-process-report/blocked-process/process/@priority)[1]', 'VARCHAR(MAX)') AS VIC_priority,
+	TextData.value('(/TextData/blocked-process-report/blocked-process/process/@trancount)[1]', 'VARCHAR(MAX)') AS VIC_trancount,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@lastbatchstarted)[1]', 'VARCHAR(MAX)') AS VIC_lastbatchstarted,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@lastbatchcompleted)[1]', 'VARCHAR(MAX)') AS VIC_lastbatchcompleted,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@lastattention)[1]', 'VARCHAR(MAX)') AS VIC_lastattention,
+	TextData.value('(/TextData/blocked-process-report/blocked-process/process/@clientapp)[1]', 'VARCHAR(MAX)') AS VIC_clientapp,
+	TextData.value('(/TextData/blocked-process-report/blocked-process/process/@hostname)[1]', 'VARCHAR(MAX)') AS VIC_hostname,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@hostpid)[1]', 'VARCHAR(MAX)') AS VIC_hostpid,
+	TextData.value('(/TextData/blocked-process-report/blocked-process/process/@loginname)[1]', 'VARCHAR(MAX)') AS VIC_loginname,
+	TextData.value('(/TextData/blocked-process-report/blocked-process/process/@isolationlevel)[1]', 'VARCHAR(MAX)') AS VIC_isolationlevel,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@xactid)[1]', 'VARCHAR(MAX)') AS VIC_xactid,
+	DB_NAME(TextData.value('(/TextData/blocked-process-report/blocked-process/process/@currentdb)[1]', 'INT')) AS VIC_currentdb,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@lockTimeout)[1]', 'VARCHAR(MAX)') AS VIC_lockTimeout,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@clientoption1)[1]', 'VARCHAR(MAX)') AS VIC_clientoption1,
+	--TextData.value('(/TextData/blocked-process-report/blocked-process/process/@clientoption2)[1]', 'VARCHAR(MAX)') AS VIC_clientoption2,
+	TextData.value('(/TextData/blocked-process-report/blocked-process/process/inputbuf)[1]', 'VARCHAR(128)') AS VIC_inputbuf
+
+FROM dbo.BlockedProcesses p
