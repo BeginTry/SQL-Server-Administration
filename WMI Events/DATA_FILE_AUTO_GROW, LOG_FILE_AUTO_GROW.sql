@@ -48,7 +48,7 @@ BEGIN
 DECLARE @PctFreeThreshold TINYINT = 10;
 DECLARE @GigsFreeThreshold SMALLINT = 10
 DECLARE @Msg NVARCHAR(MAX) = ''The following drives have less than '' + 
-	CAST(@PctFreeThreshold AS NVARCHAR(MAX)) + ''% free space or less than '' + 
+	CAST(@PctFreeThreshold AS NVARCHAR(MAX)) + ''%% free space or less than '' + 
 	CAST(@GigsFreeThreshold AS NVARCHAR(MAX)) + '' GB free space (or both):'' + CHAR(13) + CHAR(10);
 
 SELECT DISTINCT vs.volume_mount_point AS Drive,
