@@ -15,10 +15,10 @@ IF NOT EXISTS (
 GO
 
 --Create job.
-IF NOT EXISTS (SELECT job_id FROM msdb.dbo.sysjobs_view WHERE name = N'Ntirety - Disk Space Monitor')
+IF NOT EXISTS (SELECT job_id FROM msdb.dbo.sysjobs_view WHERE name = N'Disk Space Monitor')
 BEGIN
 	EXEC msdb.dbo.sp_add_job 
-		@job_name=N'Ntirety - Disk Space Monitor', 
+		@job_name=N'Disk Space Monitor', 
 		@enabled=1, 
 		@notify_level_eventlog=0, 
 		@notify_level_email=0, 
@@ -30,17 +30,17 @@ BEGIN
 		@owner_login_name=N'sa';
 
 	EXEC msdb.dbo.sp_add_jobserver 
-		@job_name=N'Ntirety - Disk Space Monitor', 
+		@job_name=N'Disk Space Monitor', 
 		@server_name = N'(local)';
 END
 GO
 
 --Add job step(s).
-IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs_view WHERE name = N'Ntirety - Disk Space Monitor')
+IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs_view WHERE name = N'Disk Space Monitor')
 BEGIN
 	--Calling sp_delete_jobstep with a step_id value of zero deletes all job steps for the job.
 	EXEC msdb.dbo.sp_delete_jobstep
-		@job_name=N'Ntirety - Disk Space Monitor', 
+		@job_name=N'Disk Space Monitor', 
 		@step_id=0
 
 	DECLARE @Cmd NVARCHAR(MAX)
@@ -71,7 +71,7 @@ END
 ';
 
 	EXEC msdb.dbo.sp_add_jobstep 
-		@job_name=N'Ntirety - Disk Space Monitor', 
+		@job_name=N'Disk Space Monitor', 
 		@step_name=N'RAISERROR on low disk space', 
 		@step_id=1, 
 		@cmdexec_success_code=0, 
@@ -88,7 +88,7 @@ END
 		@flags=0;
 END
 ELSE
-	RAISERROR('SQL Server job "Ntirety - Disk Space Monitor" does not exist.', 16, 1);
+	RAISERROR('SQL Server job "Disk Space Monitor" does not exist.', 16, 1);
 GO
 
 --Add alert for DATA_FILE_AUTO_GROW event.
@@ -108,7 +108,7 @@ BEGIN
 		@category_name=N'[Uncategorized]', 
 		@wmi_namespace=@namespace,
 		@wmi_query=N'SELECT * FROM DATA_FILE_AUTO_GROW', 
-		@job_name=N'Ntirety - Disk Space Monitor'
+		@job_name=N'Disk Space Monitor'
 END
 GO
 
@@ -129,6 +129,6 @@ BEGIN
 		@category_name=N'[Uncategorized]', 
 		@wmi_namespace=@namespace,
 		@wmi_query=N'SELECT * FROM LOG_FILE_AUTO_GROW', 
-		@job_name=N'Ntirety - Disk Space Monitor'
+		@job_name=N'Disk Space Monitor'
 END
 GO
