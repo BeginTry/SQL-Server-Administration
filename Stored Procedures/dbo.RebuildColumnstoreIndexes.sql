@@ -1,6 +1,6 @@
 CREATE PROCEDURE dbo.RebuildColumnstoreIndexes
 	@CompressedRowGroupDeletedRowCountThreshold BIGINT = 5000,
-	@CompressedRowGroupDeletedRowPercentThreshold BIGINT = 2
+	@CompressedRowGroupDeletedRowPercentThreshold TINYINT = 2
 /******************************************************************************
 * Name     : dbo.RebuildColumnstoreIndexes
 * Purpose  : Performs index rebuild operations on column store indexes.
