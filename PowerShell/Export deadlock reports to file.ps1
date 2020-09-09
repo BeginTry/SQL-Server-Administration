@@ -71,7 +71,7 @@ if($dr.HasRows)
     #Create the "Deadlock Graphs" subfolder where this script resides (if necessary).
     if(-not [System.IO.Directory]::Exists($OutputPath))
     {
-        [System.IO.Directory]::CreateDirectory($OutputPath) Out-Null
+        [System.IO.Directory]::CreateDirectory($OutputPath) | Out-Null
     }
 }
 
