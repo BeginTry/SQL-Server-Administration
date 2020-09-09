@@ -42,7 +42,7 @@ if($login -eq $null)
 }
 else
 {
-    $conn.ConnectionString = "Server=Server=" + $SqlInstance + ";Database=tempdb;user=" + $login + ";password=" + $password
+    $conn.ConnectionString = "Server=" + $SqlInstance + ";Database=tempdb;user=" + $login + ";password=" + $password
 }
 $conn.Open()
 
