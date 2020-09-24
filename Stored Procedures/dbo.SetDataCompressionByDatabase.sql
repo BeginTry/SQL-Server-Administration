@@ -1,10 +1,10 @@
-CREATE OR ALTER PROCEDURE dbo.EnableDataCompressionByDatabase
+CREATE OR ALTER PROCEDURE dbo.SetDataCompressionByDatabase
 	@DBName SYSNAME,
 	@CompressionTypeFrom VARCHAR(16),
 	@CompressionTypeTo VARCHAR(16),
 	@OutputOnly BIT = 0
 /******************************************************************************
-* Name     : dbo.EnableDataCompressionByDatabase
+* Name     : dbo.SetDataCompressionByDatabase
 * Purpose  : Changes data compression on all indexes and tables from one type
 *				to another.
 * Inputs   : @DBName - self-explanatory
@@ -22,19 +22,19 @@ AS
 
 IF @CompressionTypeFrom NOT IN ('ROW', 'PAGE', 'NONE')
 BEGIN
-	RAISERROR('PROCEDURE dbo.EnableDataCompressionByDatabase: @CompressionTypeFrom must be IN (''ROW'', ''PAGE'', ''NONE'')', 16, 1);
+	RAISERROR('PROCEDURE dbo.SetDataCompressionByDatabase: @CompressionTypeFrom must be IN (''ROW'', ''PAGE'', ''NONE'')', 16, 1);
 	RETURN;
 END
 
 IF @CompressionTypeTo NOT IN ('ROW', 'PAGE', 'NONE')
 BEGIN
-	RAISERROR('PROCEDURE dbo.EnableDataCompressionByDatabase: @CompressionTypeTo must be IN (''ROW'', ''PAGE'', ''NONE'')', 16, 1);
+	RAISERROR('PROCEDURE dbo.SetDataCompressionByDatabase: @CompressionTypeTo must be IN (''ROW'', ''PAGE'', ''NONE'')', 16, 1);
 	RETURN;
 END
 
 IF @CompressionTypeFrom = @CompressionTypeTo
 BEGIN
-	RAISERROR('PROCEDURE dbo.EnableDataCompressionByDatabase: @CompressionTypeFrom and @CompressionTypeTo are equal. No action taken.', 10, 1);
+	RAISERROR('PROCEDURE dbo.SetDataCompressionByDatabase: @CompressionTypeFrom and @CompressionTypeTo are equal. No action taken.', 10, 1);
 	RETURN;
 END
 
