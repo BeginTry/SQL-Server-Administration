@@ -17,6 +17,8 @@ CREATE OR ALTER PROCEDURE dbo.SetDataCompressionByDatabase
 ******************************************************************************
 * Change History
 *	09/23/2020	DMason	Created.
+*	09/24/2020	DMason	Check for Enterprise Edition, use ONLINE operations 
+*						if possible.
 ******************************************************************************/
 AS
 
@@ -62,13 +64,21 @@ WHERE o.is_ms_shipped = 0
 AND p.data_compression_desc = ''' + @CompressionTypeFrom + ''';';
 EXEC (@Cmd);
 
+DECLARE @EngineEdition INT = CAST(SERVERPROPERTY('EngineEdition') AS INT);
+DECLARE @OnlineOption VARCHAR(4) = 'OFF';
+
+IF @EngineEdition = 3	--3 = Enterprise (This is returned for Evaluation, Developer, and Enterprise editions.)
+	SET @OnlineOption = 'ON';
+
+
 IF @OutputOnly = 0
 BEGIN
 	DECLARE curObj CURSOR READ_ONLY FAST_FORWARD FOR
 	SELECT 'USE [' + @DBName + ']; ' +
 			CASE WHEN o.index_id = 0 THEN 'ALTER TABLE ' ELSE 'ALTER INDEX [' + o.index_name + '] ON ' END + 
 			'[' + OBJECT_SCHEMA_NAME(o.object_id, DB_ID(@DBName)) + '].[' + OBJECT_NAME(o.object_id, DB_ID(@DBName)) + '] ' +
-			'REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = ' + @CompressionTypeTo + ');' AS compression_cmd
+			'REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = ' + @CompressionTypeTo + ', ' +
+			'ONLINE = ' + @OnlineOption + ');' AS compression_cmd
 	FROM #Objects o
 
 	OPEN curObj;
@@ -97,7 +107,8 @@ BEGIN
 		'USE [' + @DBName + ']; ' +
 			CASE WHEN o.index_id = 0 THEN 'ALTER TABLE ' ELSE 'ALTER INDEX [' + o.index_name + '] ON ' END + 
 			'[' + OBJECT_SCHEMA_NAME(o.object_id, DB_ID(@DBName)) + '].[' + OBJECT_NAME(o.object_id, DB_ID(@DBName)) + '] ' +
-			'REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = ' + @CompressionTypeTo + ');' AS compression_cmd
+			'REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = ' + @CompressionTypeTo + ', ' +
+			'ONLINE = ' + @OnlineOption + ');' AS compression_cmd
 	FROM #Objects o
 END
 GO
