@@ -304,8 +304,8 @@ ON ALL SERVER FOR
 /*****************************************************************************
 * Name     : trgSecurityDDL
 * Purpose  : When security-related events occur, this trigger will:
-*				•Conditionally send an email to the dba .
-*			 	•Conditionally logs event data to table.
+*				Â•Conditionally send an email to the dba .
+*			 	Â•Conditionally logs event data to table.
 * Inputs   : None
 * Outputs  : None
 * Returns  : Nothing
