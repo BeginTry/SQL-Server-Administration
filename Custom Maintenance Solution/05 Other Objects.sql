@@ -509,10 +509,10 @@ AS
 /******************************************************************************
 * Name     : dba.BackupTransactionLogs
 * Purpose  : Performs transaction log backups on multiple databases:
-*				•Non-system db's 
-*				•Online db's
-*				•Db's not in standby
-*				•Db's set to full recovery model.
+*				Â•Non-system db's 
+*				Â•Online db's
+*				Â•Db's not in standby
+*				Â•Db's set to full recovery model.
 * Inputs   : @Path - the path where the transaction log backup files are to be created.
 *			 @MirrorToPath - (optional) the path where a copy of the trx log backup file is to be created.
 *			 @RAISERROR - (optional) flag to raise an error if backup failures are encountered.
@@ -992,10 +992,10 @@ AS
 /*
 	Purpose:	
 	Defragments indexes on [master], [msdb], and user db's that are:
-		•Online
-		•In MULTI_USER mode
-		•Not in standby
-		•Not read-only
+		Â•Online
+		Â•In MULTI_USER mode
+		Â•Not in standby
+		Â•Not read-only
 
 	History:
 	04/23/2014	DBA	Created
@@ -1209,10 +1209,10 @@ AS
 /*
 	Purpose:	
 	Updates Statistics on multiple databases:
-		•Non-system db's 
-		•Online db's
-		•Multi-user db's
-		•Db's not in standby
+		Â•Non-system db's 
+		Â•Online db's
+		Â•Multi-user db's
+		Â•Db's not in standby
 
 	History:
 	02/24/2010	DBA	Created
@@ -1419,9 +1419,9 @@ AS
 /*
 	Purpose:	
 	Performs DBCC CHECKDB on the following databases:
-		•System db's
-		•User db's that are online 
-		•User db's that are not snapshots
+		Â•System db's
+		Â•User db's that are online 
+		Â•User db's that are not snapshots
 	
 	Inputs:
 	@PhysicalOnly - an option for DBCC CHECKDB:
@@ -2449,11 +2449,11 @@ BEGIN
 			DECLARE @ErrMsg NVARCHAR(MAX) = CHAR(13) + CHAR(10) + 
 				''Membership in the following fixed server roles is not permitted in SPS production environments:'' +
 				CHAR(13) + CHAR(10) + 
-				CHAR(9) + ''• sysadmin'' + CHAR(13) + CHAR(10) + 
-				CHAR(9) + ''• serveradmin'' + CHAR(13) + CHAR(10) + 
-				CHAR(9) + ''• securityadmin''+ CHAR(13) + CHAR(10) + 
-				CHAR(9) + ''• diskadmin'' + CHAR(13) + CHAR(10) + 
-				CHAR(9) + ''• dbcreator'' + CHAR(13) + CHAR(10) + 
+				CHAR(9) + ''Â• sysadmin'' + CHAR(13) + CHAR(10) + 
+				CHAR(9) + ''Â• serveradmin'' + CHAR(13) + CHAR(10) + 
+				CHAR(9) + ''Â• securityadmin''+ CHAR(13) + CHAR(10) + 
+				CHAR(9) + ''Â• diskadmin'' + CHAR(13) + CHAR(10) + 
+				CHAR(9) + ''Â• dbcreator'' + CHAR(13) + CHAR(10) + 
 				CHAR(13) + CHAR(10) +
 				''If you need assistance, please contact DBA@Domain.com'' +
 				CHAR(13) + CHAR(10) + CHAR(13) + CHAR(10)
@@ -2529,10 +2529,10 @@ BEGIN
 			DECLARE @ErrMsg NVARCHAR(MAX) = CHAR(13) + CHAR(10) + 
 				''Membership in the following fixed database roles is not permitted in SPS production environments:'' +
 				CHAR(13) + CHAR(10) + 
-				CHAR(9) + ''• db_accessadmin'' + CHAR(13) + CHAR(10) + 
-				CHAR(9) + ''• db_backupoperator'' + CHAR(13) + CHAR(10) + 
-				CHAR(9) + ''• db_owner''+ CHAR(13) + CHAR(10) + 
-				CHAR(9) + ''• db_securityadmin'' + CHAR(13) + CHAR(10) + 
+				CHAR(9) + ''Â• db_accessadmin'' + CHAR(13) + CHAR(10) + 
+				CHAR(9) + ''Â• db_backupoperator'' + CHAR(13) + CHAR(10) + 
+				CHAR(9) + ''Â• db_owner''+ CHAR(13) + CHAR(10) + 
+				CHAR(9) + ''Â• db_securityadmin'' + CHAR(13) + CHAR(10) + 
 				CHAR(13) + CHAR(10) +
 				''If you need assistance, please contact DBA@Domain.com'' +
 						CHAR(13) + CHAR(10) + CHAR(13) + CHAR(10)
