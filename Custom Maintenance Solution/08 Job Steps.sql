@@ -314,7 +314,7 @@ GO',
 
 		SET @Cmd = N'
 #----------------------------------------------------------------------
-#    ©2017 SunGard Public Sector
+#    Â©2017 SunGard Public Sector
 #----------------------------------------------------------------------
 #Script Name: Delete Old Backup Files.ps1
 #Description: Deletes old sql server backup files.
@@ -677,7 +677,7 @@ BEGIN
 	DECLARE @Cmd NVARCHAR(MAX)
 	SET @Cmd = N'
 #----------------------------------------------------------------------
-#    ©2017 SunGard Public Sector
+#    Â©2017 SunGard Public Sector
 #----------------------------------------------------------------------
 #Script Name: Delete Old Backup Files.ps1
 #Description: Deletes old sql server backup files.
