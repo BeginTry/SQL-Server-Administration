@@ -1,4 +1,4 @@
-CREATE PROCEDURE dbo.ReorganizeColumnstoreIndexes
+CREATE OR ALTER PROCEDURE dbo.ReorganizeColumnstoreIndexes
 	@CompressAllRowGroups BIT = 1
 /******************************************************************************
 * Name     : dbo.ReorganizeColumnstoreIndexes
@@ -10,6 +10,12 @@ CREATE PROCEDURE dbo.ReorganizeColumnstoreIndexes
 ******************************************************************************
 * Change History
 *	07/29/2020	DMason	Created.
+*	11/03/2020	DMason	If REORGANIZE fails with error/messageId 35379, try
+*		again with REBUILD. I have observed the following error, but have
+*		not yet found a resolution:
+*	Internal error occurred while flushing delete buffer database id <x>, 
+*		table id <y>, index id <z>, partition number 1. 
+*	Additional messages in the SQL Server error log may provide more details.
 ******************************************************************************/
 AS
 DROP TABLE IF EXISTS #CSI;
@@ -59,28 +65,44 @@ EXEC sp_MSforeachdb @Cmd;
 	SELECT * FROM #CSI WHERE state_description = 'OPEN';
 */
 
-DECLARE @AlterIdxCmd NVARCHAR(MAX);
+DECLARE @ReorgIdxCmd NVARCHAR(MAX);
+DECLARE @RebuildIdxCmd NVARCHAR(MAX);
 DECLARE curCI CURSOR FAST_FORWARD READ_ONLY FOR
-	SELECT DISTINCT 'ALTER INDEX ' + QUOTENAME(IndexName) + ' ON ' + QUOTENAME(DatabaseName) + '.' + QUOTENAME(TableSchema) + '.' + QUOTENAME(TableName) + 
-		' REORGANIZE WITH (COMPRESS_ALL_ROW_GROUPS = ' + CASE WHEN @CompressAllRowGroups = 1 THEN 'ON' ELSE 'OFF' END + ');' AS AlterIdxCmd
+	SELECT DISTINCT 
+		'ALTER INDEX ' + QUOTENAME(IndexName) + ' ON ' + QUOTENAME(DatabaseName) + '.' + QUOTENAME(TableSchema) + '.' + QUOTENAME(TableName) + 
+		' REORGANIZE WITH (COMPRESS_ALL_ROW_GROUPS = ' + CASE WHEN @CompressAllRowGroups = 1 THEN 'ON' ELSE 'OFF' END + ');' AS ReorgIdxCmd,
+		'ALTER INDEX ' + QUOTENAME(IndexName) + ' ON ' + QUOTENAME(DatabaseName) + '.' + QUOTENAME(TableSchema) + '.' + QUOTENAME(TableName) + 
+		' REBUILD;' AS RebuildIdxCmd
 	FROM #CSI
 
 OPEN curCI;
-FETCH NEXT FROM curCI INTO @AlterIdxCmd;
+FETCH NEXT FROM curCI INTO @ReorgIdxCmd, @RebuildIdxCmd;
 
 WHILE @@FETCH_STATUS = 0
 BEGIN
-	PRINT @AlterIdxCmd;
-
 	BEGIN TRY
-		EXEC (@AlterIdxCmd);
+		EXEC (@ReorgIdxCmd);
 	END TRY
 	BEGIN CATCH
 		PRINT ERROR_MESSAGE();
+		PRINT @ReorgIdxCmd;
+
+		IF ERROR_NUMBER() = 35379
+		BEGIN
+			--Attempt a REBUILD instead
+			BEGIN TRY
+				EXEC (@RebuildIdxCmd);
+			END TRY
+			BEGIN CATCH
+				PRINT ERROR_MESSAGE();
+				PRINT @RebuildIdxCmd;
+			END CATCH
+		END
 	END CATCH
 
-	FETCH NEXT FROM curCI INTO @AlterIdxCmd;
+	FETCH NEXT FROM curCI INTO @ReorgIdxCmd, @RebuildIdxCmd;
 END
 
 CLOSE curCI;
 DEALLOCATE curCI;
+GO
