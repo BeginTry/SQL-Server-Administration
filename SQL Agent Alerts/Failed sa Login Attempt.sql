@@ -1,7 +1,7 @@
 USE msdb;
 GO
 
---TODO: ensure Token Replacement is enabled in SQL Server Agent (Alert System).
+--TODO: for notifications, ensure "mail profile" is enabled in SQL Server Agent (Alert System).
 --TODO: specify an Operator for alert notifications.
 DECLARE @Operator SYSNAME = 'Dave Mason';
 DECLARE @AlertName SYSNAME = N'18456 - Failed sa Login Attempt';
