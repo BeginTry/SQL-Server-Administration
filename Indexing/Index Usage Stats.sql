@@ -1,6 +1,7 @@
 /*
-	Iterate over each database and write index usage statistics meta data for each table to a single table in [tempdb].
-	Output is primarily from sys.dm_db_index_Usage_stats()
+	Iterate over each database and gather index usage statistics for all user tables.
+	Output is primarily from sys.dm_db_index_Usage_stats(),
+	data is persisted to a "permanent" table in [tempdb].
 */
 IF EXISTS (
 	SELECT *
@@ -32,10 +33,17 @@ CREATE TABLE tempdb.guest.IndexUsageStats (
 	IndexSize_MB BIGINT,
 	InRowPages BIGINT,
 	RowOverflowPages BIGINT,
-	LobPages BIGINT
+	LobPages BIGINT,
+	StatsDate DATETIME
 );
 
-DECLARE @TSql VARCHAR(1000) = 'USE [?]; 
+/*
+	Iterate through databases and write index meta data to a single table.
+	Output is primarily from sys.dm_db_index_Usage_stats()
+*/
+TRUNCATE TABLE tempdb.guest.IndexUsageStats;
+
+DECLARE @TSql VARCHAR(2000) = 'USE [?]; 
 
 IF DB_NAME() IN (''master'', ''model'', ''msdb'', ''tempdb'')
 	RETURN;
@@ -58,7 +66,8 @@ SELECT
 	ps.used_page_count * 8 / 1024,
 	ps.in_row_used_page_count,
 	ps.row_overflow_used_page_count,
-	ps.lob_used_page_count
+	ps.lob_used_page_count,
+	CURRENT_TIMESTAMP
 FROM sys.dm_db_partition_stats ps
 JOIN sys.partitions p 
 	ON ps.partition_id = p.partition_id
@@ -75,7 +84,26 @@ WHERE o.type = ''U''
 AND p.rows > 0
 ORDER BY o.name, i.index_id';
 
-EXEC sp_MSforeachdb @TSql
+EXEC sp_MSforeachdb @TSql;
 
-SELECT *
+/***********************************************************************/
+DECLARE @Last DATETIME;
+SELECT @Last = sqlserver_start_time FROM sys.dm_os_sys_info;
+
+SELECT *,
+	i.UserSeeks/ca.SecondsSinceStartup AS SeeksPerSec,
+	i.UserSeeks/(ca.SecondsSinceStartup/60) AS SeeksPerMin,
+	i.UserSeeks/(ca.SecondsSinceStartup/60/60) AS SeeksPerHour,
+	i.UserScans/ca.SecondsSinceStartup AS ScansPerSec,
+	i.UserScans/(ca.SecondsSinceStartup/60) AS ScansPerMin,
+	i.UserScans/(ca.SecondsSinceStartup/60/60) AS ScansPerHour,
+	'USE ' + QUOTENAME(i.DBName) + '; EXEC sp_estimate_data_compression_savings ''' + i.SchemaName + ''', ''' + i.TableName + ''', ' + 
+		CAST(i.index_id AS VARCHAR)+ ', NULL, ''ROW'';' AS EstimateCompressionCmd,
+	'USE ' + QUOTENAME(i.DBName) + '; ALTER ' +
+		CASE 
+			WHEN i.index_id = 0 THEN 'TABLE '
+			ELSE 'INDEX ' + QUOTENAME(i.IndexName) + ' ON ' 
+		END  + QUOTENAME(i.SchemaName) + '.' + QUOTENAME(i.TableName) + 
+		' REBUILD PARTITION = ALL WITH (DATA_COMPRESSION = ROW);' AS EnableCompressionCmd
 FROM tempdb.guest.IndexUsageStats i
+CROSS APPLY ( SELECT CAST(DATEDIFF(SECOND, @Last, i.StatsDate)AS NUMERIC(30, 10)) AS SecondsSinceStartup) AS ca;
