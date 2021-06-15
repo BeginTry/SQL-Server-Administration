@@ -42,9 +42,35 @@ END
 
 --TODO: change the [Orig_sa] password.
 
---STEP 2: remove fake [sa] from sysadmin fixed server role, GRANT CONTROL SERVER authorization.
-GRANT CONTROL SERVER to [sa];
-ALTER SERVER ROLE sysadmin DROP MEMBER [sa];
+--STEP 2
+USE master;
+IF NOT EXISTS (
+	SELECT 
+		prin.name AS PrincipalName, 
+		perm.state_desc, 
+		perm.permission_name
+	FROM sys.server_principals AS prin
+	JOIN sys.server_permissions AS perm
+		ON prin.principal_id = perm.grantee_principal_id
+	WHERE prin.name = 'sa'
+	AND perm.state_desc = 'GRANT'
+	AND perm.permission_name = 'CONTROL SERVER'
+)
+BEGIN
+	GRANT CONTROL SERVER to [sa];
+END
+GO
+
+--Allow some time for SQL to revalidate current [sa] connections. Otherwise, you may encounter errors similar to the following:
+--Login failed for user 'sa'. Reason: Failed to open the database '%s' configured in the login object while revalidating the login on the connection. [CLIENT: %s]
+--Login failed for user 'sa'. Reason: Failed to open the explicitly specified database '%s'. [CLIENT: %s]
+WAITFOR DELAY '00:01:30';
+GO
+
+IF IS_SRVROLEMEMBER('sysadmin', 'sa') = 1
+BEGIN
+	ALTER SERVER ROLE sysadmin DROP MEMBER [sa];
+END
 GO
 
 
