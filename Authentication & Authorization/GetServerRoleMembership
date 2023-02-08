@@ -4,9 +4,9 @@
 */
 BEGIN
 SELECT 
-	l.name PrincipalName, 
-	l.type_desc AS LoginType,
-	COALESCE(r.name, '<none>') AS RoleName
+	l.name [Server Principal], 
+	l.type_desc AS [Server Principal Type],
+	COALESCE(r.name, '') AS [Server Role]
 FROM  master.sys.server_principals l
 LEFT JOIN master.sys.server_role_members m
 	ON m.member_principal_id = l.principal_id
