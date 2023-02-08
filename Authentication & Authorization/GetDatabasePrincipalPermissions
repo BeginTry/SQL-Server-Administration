@@ -8,7 +8,7 @@ CREATE TABLE #DatabasePrincipalPermissions (
 	[Database Name] SYSNAME,
 	[Database Principal] SYSNAME,
 	[Database Principal Type] CHAR(1),
-	Permission NVARCHAR(MAX),
+	[Database Permission] NVARCHAR(MAX),
 	Class NVARCHAR(256),
 	SecurableSchema SYSNAME,
 	SecurableObject SYSNAME,
@@ -24,7 +24,7 @@ SELECT
 	DB_NAME() AS database_name,
 	prin.[name] [Database Principal], 
 	prin.type,
-	COALESCE(perm.state_desc + '' '' + perm.permission_name, ''no permission statements'') [Permission],
+	COALESCE(perm.state_desc + '' '' + perm.permission_name, ''no permission statements'') [Database Permission],
 	COALESCE(perm.class_desc, '''') Class, 
 
 	COALESCE(OBJECT_SCHEMA_NAME(perm.major_id), '''') [SecurableSchema],
@@ -54,11 +54,11 @@ SELECT
 		WHEN 'U' THEN 'User (Windows Auth)'
 		WHEN 'X' THEN 'External group from Azure Active Directory group or applications'
 	END	AS [Database Principal Type],
-	dpp.Permission, 
+	dpp.[Database Permission], 
 	dpp.Class, 
 	dpp.SecurableSchema, 
 	dpp.SecurableObject,
 	COALESCE(dpp.[Server Principal], '') AS [Server Principal]
 FROM #DatabasePrincipalPermissions dpp
-ORDER BY dpp.[Database Name], dpp.[Database Principal], dpp.Permission, dpp.SecurableObject;
+ORDER BY dpp.[Database Name], dpp.[Database Principal], dpp.[Database Permission], dpp.SecurableObject;
 GO
