@@ -12,12 +12,15 @@
 USE tempdb;
 GO
 
+IF OBJECT_ID('tempdb.dbo.#UserRoleMembership') IS NOT NULL DROP TABLE dbo.#UserRoleMembership;
+
 CREATE TABLE #UserRoleMembership (
 	[Database Name] SYSNAME,
-	[Principal Name] SYSNAME,
-	[Principal Type] CHAR(1),
-	[Role Name] SYSNAME
-)
+	[Database Principal] SYSNAME,
+	[Database Principal Type] CHAR(1),
+	[Database Role Name] SYSNAME,
+	[Server Principal] NVARCHAR(128) NULL
+);
 
 DECLARE @command VARCHAR(1000);
 
@@ -28,20 +31,25 @@ INSERT INTO #UserRoleMembership
 SELECT DB_NAME() AS DatabaseName, 
 	u.name, 
 	u.type,
-	COALESCE(r.name, ''<none>'') AS RoleName
-SELECT * FROM sys.database_principals u
+	COALESCE(r.name, '''') AS RoleName,
+	p.name AS [Server Principal]
+FROM sys.database_principals u
 LEFT JOIN sys.database_role_members rm
 	ON rm.member_principal_id = u.principal_id
 LEFT JOIN sys.database_principals r
 	ON r.principal_id = rm.role_principal_id
+LEFT JOIN master.sys.server_principals p
+	ON p.sid = u.sid
 WHERE u.is_fixed_role = 0
 AND u.name NOT IN (''dbo'', ''INFORMATION_SCHEMA'', ''sys'')';
 
 EXEC sp_MSforeachdb @command;
+GO
 
-SELECT m.[Database Name], 
-	m.[Principal Name],
-	CASE m.[Principal Type]
+SELECT @@SERVERNAME AS [Server Name],
+	m.[Database Name], 
+	m.[Database Principal],
+	CASE m.[Database Principal Type]
 		WHEN 'A' THEN 'Application role'
 		WHEN 'C' THEN 'User mapped to a certificate'
 		WHEN 'E' THEN 'External user from Azure Active Directory'
@@ -51,10 +59,9 @@ SELECT m.[Database Name],
 		WHEN 'S' THEN 'User (SQL Auth)'
 		WHEN 'U' THEN 'User (Windows Auth)'
 		WHEN 'X' THEN 'External group from Azure Active Directory group or applications'
-	END	AS [Principal Description],
-	m.[Role Name]
+	END	AS [Database Principal Type],
+	m.[Database Role Name],
+	m.[Server Principal]
 FROM #UserRoleMembership m
-ORDER BY m.[Database Name], m.[Principal Name], m.[Role Name]
-
-DROP TABLE #UserRoleMembership;
+ORDER BY m.[Database Name], m.[Database Principal], m.[Database Role Name]
 GO
