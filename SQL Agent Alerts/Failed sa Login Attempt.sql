@@ -1,3 +1,5 @@
+--Add alert for [sa] login attempts that fail due to a bad password.
+--Repeated occurrences might indicate a brute force attack or other hacking activity.
 USE msdb;
 GO
 
@@ -6,7 +8,6 @@ GO
 DECLARE @Operator SYSNAME = 'Dave Mason';
 DECLARE @AlertName SYSNAME = N'18456 - Failed sa Login Attempt';
 
---Add generic alert for failed logins.
 IF NOT EXISTS (
 	SELECT *
 	FROM msdb.dbo.sysalerts
@@ -19,7 +20,7 @@ IF NOT EXISTS (
 		@enabled=1, 
 		@delay_between_responses=0, --Important to leave this at zero.
 		@include_event_description_in=0, 
-		@event_description_keyword=N'''sa''', 
+		@event_description_keyword=N'Login failed for user ''sa''. Reason: Password did not match that for the login provided.', 
 		@category_name=N'[Uncategorized]', 
 		@job_id=NULL
 
