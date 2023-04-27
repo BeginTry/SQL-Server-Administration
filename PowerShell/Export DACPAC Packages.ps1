@@ -37,7 +37,7 @@
 
     .NOTES
         Version:        1.0
-        Author:         Dave Mason (@BeginTry)
+        Author:         DMason (https://mastodon.social/@DaveMasonDotMe)
         Creation Date:  2021/04/06
         
         History:
@@ -65,10 +65,22 @@ foreach ($row in $table)
     $DirList.Add($row.Directory.FullName)
 }
 
-#If not found, the 2nd search will be in the "Visual Studio" folder.
+#If not found, the 2nd search will be in the "Visual Studio" x86 folder.
 if($DirList.Count -lt 1)
 {
     $SearchPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio"
+    $table = Get-Childitem –Path "$SearchPath\*\sqlpackage.exe" -Recurse -ErrorAction SilentlyContinue
+
+    foreach ($row in $table)
+    {
+        $DirList.Add($row.Directory.FullName)
+    }
+}
+
+#If not found, the 3rd search will be in the "Visual Studio" X64 folder.
+if($DirList.Count -lt 1)
+{
+    $SearchPath = "${env:ProgramFiles}\Microsoft Visual Studio"
     $table = Get-Childitem –Path "$SearchPath\*\sqlpackage.exe" -Recurse -ErrorAction SilentlyContinue
 
     foreach ($row in $table)
@@ -86,7 +98,7 @@ if($DirList.Count -gt 0)
     $SqlPackageExe = [System.IO.Path]::Combine($DirList[0], "sqlpackage.exe")
 }
 
-$SqlPackageExe
+"SqlPackageExe: " + $SqlPackageExe
 #endregion
 
 #Customize query as needed to include/exclude databases.
@@ -94,7 +106,8 @@ $Query = "SELECT d.name " + [Environment]::NewLine + `
     "FROM master.sys.databases d " + [Environment]::NewLine + `
     "WHERE d.database_id > 4 " + [Environment]::NewLine + `
     "AND d.state_desc = 'ONLINE'" + [Environment]::NewLine + `
-    "AND d.name NOT IN ('SSISDB', 'ReportServer', 'ReportServerTempDB', 'tpcc');"
+    "AND d.name NOT IN ('List of Exclustions');"
+    #"AND d.name IN ('EDI', 'RouteOrganizer', 'SharedTables', 'Synergy');"
 
 #Invoke-Sqlcmd usage varies by PowerShell version.
 try {
@@ -122,4 +135,7 @@ foreach($dataRow in $rowsCollection)
     $SourceConnectionString = "Server=$ServerInstance;Integrated Security=SSPI;Database=$DatabaseName"
 
     & $SqlPackageExe /Action:Extract /TargetFile:$TargetFile /SourceConnectionString:$SourceConnectionString
+
+    #Tried this to overcome some column validation errors related to OPENQUERY. It didn't work.
+    #& $SqlPackageExe /Action:Extract /TargetFile:$TargetFile /SourceConnectionString:$SourceConnectionString /p:VerifyExtraction=False
 }
